@@ -1,0 +1,233 @@
+<!--<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> 
+</head>
+<body>
+    <nav class="sidebar">
+        <h3>Commuter Portal</h3>
+        <button onclick="switchTab('maps')">Map & GTFS Routing</button>
+        <button onclick="switchTab('availability')">Bus & Seat Availability</button>
+        <button onclick="switchTab('offline')">Offline Schedules</button>
+        <button onclick="switchTab('history')">Passes & History</button>
+        <a href="/logout" class="logout-btn">Logout</a>
+    </nav>
+
+    <div class="main-content">
+        <div id="maps" class="tab-content active">
+            <h2>Live Routing & GTFS Tracking</h2>
+            <div class="map-controls">
+                <input type="text" id="source" placeholder="Source">
+                <input type="text" id="destination" placeholder="Destination">
+                <button onclick="calculateRoute()">Find Shortest Path</button>
+            </div>
+            <div id="gtfs-map-container" style="height: 500px; background: #e0e0e0; margin-top: 20px;"></div>
+        </div>
+
+        <div id="availability" class="tab-content">
+            <h2>Live Bus Availability & Alerts</h2>
+            <div id="seasonal-traffic-graph"></div> 
+            
+            <h3 style="margin-top: 30px;">Live Fleet Capacity (AI Tracked)</h3>
+            <table class="data-table">
+                <tr><th>Route ID</th><th>Bus Number</th><th>Detected Passengers</th><th>Status</th></tr>
+                {% for bus in buses %}
+                <tr>
+                    <td>Route {{ bus.route_id }}</td>
+                    <td><strong>{{ bus.bus_number }}</strong></td>
+                    <td style="color: #e67e22; font-weight: bold;">{{ bus.capacity }} Passengers</td>
+                    <td>{{ bus.status }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4">No buses currently deployed on the network.</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <div id="offline" class="tab-content">
+            <h2>Saved Schedules (Offline Mode)</h2>
+            <p>These static timetables are cached on your device for low-network areas.</p>
+            <table class="data-table">
+                <tr><th>Route</th><th>First Bus</th><th>Last Bus</th><th>Frequency</th></tr>
+                <tr><td>Route 1: Kothri Kalan ⇄ Bhopal</td><td>06:00 AM</td><td>10:30 PM</td><td>Every 45 mins</td></tr>
+                <tr><td>Route 2: Bhopal ⇄ Indore</td><td>05:30 AM</td><td>11:00 PM</td><td>Every 30 mins</td></tr>
+            </table>
+        </div>
+
+        <div id="history" class="tab-content">
+            <h2>Purchase History & Passes</h2>
+            
+            <div class="card" style="margin-bottom: 30px;">
+                <h3>Buy Seasonal or One-Way Pass</h3>
+                <form method="POST" action="/api/buy_pass">
+                    <select name="pass_type" required>
+                        <option value="" disabled selected>Select Pass Type...</option>
+                        <option value="One-way Ticket">One-way Ticket (₹50)</option>
+                        <option value="Weekly Pass">Weekly Pass (₹300)</option>
+                        <option value="Monthly Seasonal">Monthly Seasonal Pass (₹1000)</option>
+                    </select>
+                    <input type="number" name="amount" placeholder="Confirm Amount (e.g., 50, 300, 1000)" required>
+                    <button type="submit">Complete Purchase</button>
+                </form>
+            </div>
+
+            <h3>Your Past Transactions</h3>
+            <table class="data-table">
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Pass Type</th>
+                    <th>Amount Paid</th>
+                    <th>Travel Rating</th>
+                </tr>
+                
+                {% for tx in transactions %}
+                <tr>
+                    <td><strong>#TXN-00{{ tx.id }}</strong></td>
+                    <td>{{ tx.pass_type }}</td>
+                    <td>₹{{ tx.amount }}</td>
+                    <td style="color: #f39c12; font-weight: bold;">{{ tx.rating }} / 5</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4">No previous purchases found on this account.</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Commuter Dashboard | TransitX</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="dashboard-container">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div>
+      <div class="flex items-center gap-2 mb-8 font-bold text-xl text-primary">
+        <div class="badge badge-info"><i class="fa-solid fa-bus-simple"></i></div> TransitX
+      </div>
+      <div class="sidebar-menu">
+        <div class="sidebar-item active" onclick="switchTab('live-map')"><i class="fa-solid fa-map"></i> GTFS Routing</div>
+        <div class="sidebar-item" onclick="switchTab('fleet')"><i class="fa-solid fa-brain"></i> Live Fleet & AI Seats</div>
+        <div class="sidebar-item" onclick="switchTab('passes')"><i class="fa-solid fa-ticket"></i> Passes & History</div>
+      </div>
+    </div>
+    <a href="/logout" class="btn btn-outline text-danger" style="width: 100%;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+    <header class="top-header">
+      <h2 class="text-xl font-bold">Commuter Portal</h2>
+      <div class="badge badge-success"><i class="fa-solid fa-wifi"></i> Telemetry Active</div>
+    </header>
+
+    <div class="content-body">
+      
+      <!-- MAP & ROUTING TAB -->
+      <div id="live-map" class="tab-content active">
+        <div class="card-white mb-6">
+          <h3 class="text-lg font-bold mb-4">Route Planner</h3>
+          <div class="flex gap-4 mb-4">
+            <input type="text" id="source" class="form-input flex-1" placeholder="Enter Source City...">
+            <input type="text" id="destination" class="form-input flex-1" placeholder="Enter Destination City...">
+            <button class="btn btn-primary" onclick="calculateRoute()">Calculate Path</button>
+          </div>
+          <div id="gtfs-map-container" style="height: 500px; border-radius: var(--radius-md); z-index: 1;"></div>
+        </div>
+      </div>
+
+      <!-- FLEET & AI SEATS TAB -->
+      <div id="fleet" class="tab-content" style="display: none;">
+        <h3 class="text-xl font-bold mb-4">Active Fleet Status</h3>
+        <div class="bus-cards-grid">
+          {% for bus in buses %}
+          <div class="glass-card">
+            <div class="flex justify-between items-center mb-4">
+              <span class="gov-badge bg-primary text-white"><i class="fa-solid fa-bus"></i> #{{ bus.bus_number }}</span>
+              <span class="badge badge-{{ 'success' if bus.status == 'On Time' else 'warning' }}">{{ bus.status }}</span>
+            </div>
+            <p class="text-sm font-semibold mb-2">Route ID: {{ bus.route_id }}</p>
+            <div class="progress-track mb-4"><div class="progress-fill" style="width: {{ (bus.capacity / 60) * 100 }}%;"></div></div>
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-muted"><i class="fa-solid fa-users"></i> AI Detected:</span>
+              <span class="font-bold text-primary">{{ bus.capacity }} Pax</span>
+            </div>
+          </div>
+          {% else %}
+          <p class="text-muted">No active buses on the network.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- PASSES TAB -->
+      <div id="passes" class="tab-content" style="display: none;">
+        <div class="grid grid-2">
+          <!-- Buy Pass Form -->
+          <div class="card-white">
+            <h3 class="text-lg font-bold mb-4">Purchase Transit Pass</h3>
+            <form method="POST" action="/api/buy_pass">
+              <div class="form-group">
+                <select name="pass_type" class="form-select" required>
+                  <option value="" disabled selected>Select Pass Type...</option>
+                  <option value="One-way Ticket">One-way Ticket</option>
+                  <option value="Weekly Pass">Weekly Pass</option>
+                  <option value="Monthly Seasonal">Monthly Seasonal</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <input type="number" name="amount" class="form-input" placeholder="Amount (₹)" required>
+              </div>
+              <button type="submit" class="btn btn-accent w-full mt-4">Confirm Purchase</button>
+            </form>
+          </div>
+
+          <!-- History Table -->
+          <div class="card-white">
+            <h3 class="text-lg font-bold mb-4">Transaction History</h3>
+            <div class="overflow-x-auto">
+              <table style="width: 100%; text-align: left; border-collapse: collapse;">
+                <tr style="border-bottom: 2px solid var(--border-light);">
+                  <th class="py-2 text-muted">TXN ID</th>
+                  <th class="py-2 text-muted">Pass Type</th>
+                  <th class="py-2 text-muted">Amount</th>
+                </tr>
+                {% for tx in transactions %}
+                <tr style="border-bottom: 1px solid var(--border-light);">
+                  <td class="py-3 font-semibold">#00{{ tx.id }}</td>
+                  <td class="py-3">{{ tx.pass_type }}</td>
+                  <td class="py-3 text-success font-bold">₹{{ tx.amount }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" class="py-3 text-muted">No transactions found.</td></tr>
+                {% endfor %}
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>

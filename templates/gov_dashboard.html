@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Command Center | Gov Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body class="dashboard-container" style="background: var(--admin-bg); color: var(--admin-text-main);">
+
+  <!-- Admin Sidebar -->
+  <aside class="sidebar" style="background: var(--admin-card); border-right-color: var(--admin-border);">
+    <div>
+      <div class="flex items-center gap-2 mb-8 font-bold text-xl text-white">
+        <div class="badge" style="background: var(--danger-red);"><i class="fa-solid fa-shield"></i></div> Command
+      </div>
+      <div class="sidebar-menu">
+        <div class="sidebar-item active text-white" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-line"></i> Revenue Analytics</div>
+        <div class="sidebar-item text-white" onclick="switchTab('fleet-ops')"><i class="fa-solid fa-bus-simple"></i> Fleet Operations</div>
+        <div class="sidebar-item text-white" onclick="switchTab('user-management')"><i class="fa-solid fa-users-gear"></i> User Management</div>
+      </div>
+    </div>
+    <a href="/logout" class="btn btn-outline text-danger w-full"><i class="fa-solid fa-right-from-bracket"></i> End Shift</a>
+  </aside>
+
+  <!-- Admin Content -->
+  <main class="main-wrapper">
+    <header class="top-header" style="background: var(--admin-card); border-bottom-color: var(--admin-border);">
+      <h2 class="text-xl font-bold text-white">Gov Diagnostics</h2>
+      <div id="incident-alert" class="badge badge-success"><i class="fa-solid fa-check-circle"></i> Network Stable</div>
+    </header>
+
+    <div class="content-body">
+      
+      <!-- Analytics Tab -->
+      <div id="analytics" class="tab-content active">
+        <div class="grid grid-2">
+          <!-- Plotly Chart -->
+          <div class="card-white" style="background: var(--admin-card); border-color: var(--admin-border);">
+            <h3 class="text-lg font-bold text-black mb-4">Pass Sales Distribution</h3>
+            <div id="sales-chart" style="width:100%; height:300px;"></div>
+          </div>
+          
+          <!-- Revenue Table -->
+          <div class="card-white" style="background: var(--admin-card); border-color: var(--admin-border);">
+             <h3 class="text-lg font-bold text-white mb-4">Financial Ledger</h3>
+             <table style="width: 100%; text-align: left; border-collapse: collapse; color: rgb(17, 17, 17);">
+                <tr style="border-bottom: 1px solid var(--admin-border);">
+                    <th class="py-2 text-muted">Type</th>
+                    <th class="py-2 text-muted">Sold</th>
+                    <th class="py-2 text-muted">Revenue</th>
+                </tr>
+                {% for i in range(labels|length) %}
+                <tr style="border-bottom: 1px solid var(--admin-border);">
+                    <td class="py-2">{{ labels[i] }}</td>
+                    <td class="py-2">{{ values[i] }}</td>
+                    <td class="py-2 text-success">₹{{ revenues[i] }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" class="py-2 text-muted">No transactions.</td></tr>
+                {% endfor %}
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fleet Operations Tab -->
+      <div id="fleet-ops" class="tab-content" style="display: none;">
+        <div class="grid grid-2">
+          
+          <!-- Add Bus Form -->
+          <div class="card-white" style="background: var(--admin-card); border-color: var(--admin-border);">
+            <h3 class="text-lg font-bold text-white mb-4">Deploy New Vehicle</h3>
+            <form method="POST" action="/api/add_bus">
+                <div class="form-group mb-4">
+                  <select name="route_id" class="form-select dark-theme" required>
+                      <option value="" disabled selected>Select Route...</option>
+                      <option value="1">Route 1: Kothri Kalan ⇄ Bhopal</option>
+                      <option value="2">Route 2: Bhopal ⇄ Indore</option>
+                      <option value="3">Route 3: Bhopal ⇄ Lucknow</option>
+                      <option value="4">Route 4: Indore ⇄ Lucknow</option>
+                  </select>
+                </div>
+                <div class="form-group mb-4">
+                  <input type="text" name="bus_number" class="form-input dark-theme" placeholder="Registration (MP04-AB-1234)" required>
+                </div>
+                <div class="form-group mb-4">
+                  <input type="number" name="capacity" class="form-input dark-theme" placeholder="Capacity" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-full mt-2">Deploy to Network</button>
+            </form>
+          </div>
+
+          <!-- Active Roster -->
+          <div class="card-white" style="background: var(--admin-card); border-color: var(--admin-border);">
+            <h3 class="text-lg font-bold text-white mb-4">Active Telemetry Roster</h3>
+            <table style="width: 100%; text-align: left; border-collapse: collapse; color: rgb(6, 5, 5);">
+              <tr style="border-bottom: 1px solid var(--admin-border);">
+                <th class="py-2 text-muted">Bus ID</th>
+                <th class="py-2 text-muted">Route</th>
+                <th class="py-2 text-muted">Data Usage</th>
+              </tr>
+              {% for bus in buses %}
+              <tr style="border-bottom: 1px solid var(--admin-border);">
+                <td class="py-2 font-bold">{{ bus.bus_number }}</td>
+                <td class="py-2">R-{{ bus.route_id }}</td>
+                <td class="py-2 text-info">{{ bus.data_usage_mb }} MB</td>
+              </tr>
+              {% endfor %}
+            </table>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- User Management Tab -->
+      <div id="user-management" class="tab-content" style="display: none;">
+        <div class="card-white" style="background: var(--admin-card); border-color: var(--admin-border);">
+          <h3 class="text-lg font-bold text-white mb-4">Commuter Database</h3>
+          <table style="width: 100%; text-align: left; border-collapse: collapse; color: rgb(8, 7, 7);">
+            <tr style="border-bottom: 1px solid var(--admin-border);">
+              <th class="py-2 text-muted">Account ID</th>
+              <th class="py-2 text-muted">Full Name</th>
+              <th class="py-2 text-muted">Email Address</th>
+              <th class="py-2 text-muted">Actions</th>
+            </tr>
+            
+            {% for u in users %}
+            <tr style="border-bottom: 1px solid var(--admin-border);">
+              <td class="py-3 font-semibold text-info">#{{ loop.index }}</td>
+              <td class="py-3 font-bold">{{ u.name }}</td>
+              <td class="py-3">{{ u.email }}</td>
+              <td class="py-3 flex gap-2">
+                
+                <button class="btn btn-sm btn-primary" onclick="openEditUserModal('{{ u.id }}', '{{ u.name }}', '{{ u.email }}')">
+                  <i class="fa-solid fa-pen-to-square"></i> Edit
+                </button>
+                
+                <form method="POST" action="/api/delete_user/{{ u.id }}" style="display: inline;" onsubmit="return confirm('WARNING: Are you sure you want to permanently delete this user and their transaction history?');">
+                  <button type="submit" class="btn btn-sm btn-danger">
+                    <i class="fa-solid fa-trash"></i> Revoke Access
+                  </button>
+                </form>
+                
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4" class="py-3 text-muted text-center">No commuter accounts found in the database.</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+
+    </div> <!-- End of content-body -->
+    
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="modal-overlay">
+      <div class="modal-container" style="background: var(--admin-card); border: 1px solid var(--admin-border);">
+        <div class="modal-header" style="border-bottom-color: var(--admin-border);">
+          <div class="modal-title text-black"><i class="fa-solid fa-user-pen text-info"></i> Edit Commuter Details</div>
+          <button type="button" class="modal-close" onclick="closeEditUserModal()" style="background: var(--admin-bg); color: rgb(6, 6, 6);">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <form method="POST" action="/api/edit_user">
+            <!-- Hidden input to pass the User ID to the backend -->
+            <input type="hidden" name="user_id" id="editUserId">
+            
+            <div class="form-group mb-4">
+              <label class="form-label text-muted">Full Name</label>
+              <div class="input-wrapper">
+                 <i class="fa-solid fa-user input-icon"></i>
+                 <input type="text" name="name" id="editUserName" class="form-input dark-theme" required>
+              </div>
+            </div>
+            
+            <div class="form-group mb-6">
+              <label class="form-label text-muted">Email Address</label>
+              <div class="input-wrapper">
+                 <i class="fa-solid fa-envelope input-icon"></i>
+                 <input type="email" name="email" id="editUserEmail" class="form-input dark-theme" required>
+              </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-full" style="width: 100%;">
+              Save Changes <i class="fa-solid fa-check"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Plotly Injection -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const labels = {{ labels | tojson | safe }};
+        const values = {{ values | tojson | safe }};
+        if(labels.length > 0) {
+            Plotly.newPlot('sales-chart', [{ x: labels, y: values, type: 'bar', marker: {color: '#1565C0'} }], 
+            { paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)', font: {color: '#333'}, margin: {t: 10, l: 30, r: 10, b: 30} });
+        }
+    });
+  </script>
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>

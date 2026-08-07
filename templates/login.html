@@ -1,0 +1,138 @@
+<!--<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Traffic Management - Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <h2>System Login</h2>
+        <form method="POST" action="/">
+            <select name="role" required>
+                <option value="user">Commuter / Public User</option>
+                <option value="gov">Gov Official / Developer</option>
+            </select>
+            <input type="email" name="email" placeholder="Email Address" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Log In</button>
+        </form>
+    </div>
+</body>
+</html>-->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TransitX | Secure Login & Registration</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body style="min-height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; background-color: var(--bg-main);">
+
+  <div class="split-card" style="max-width: 900px; width: 100%; margin: auto;">
+    <!-- Left Hero -->
+    <div class="hero-panel">
+      <div>
+        <span class="gov-badge" style="color: white; border-color: rgba(255,255,255,0.3);">
+          <i class="fa-solid fa-shield-halved"></i> TransitX OS
+        </span>
+        <h2 class="text-3xl font-bold mt-4">Smart Public Transport</h2>
+        <p class="text-secondary mt-2" style="color: #cbd5e1;">AI Live Tracking & Government Fleet Management.</p>
+      </div>
+      <div class="mt-8">
+        <p class="text-xs text-muted">Gov.in Certified Platform © 2026</p>
+      </div>
+    </div>
+
+    <!-- Right Form -->
+    <div class="form-panel card-white" style="border-radius: 0; box-shadow: none;">
+      <h3 class="text-2xl font-bold mb-1" id="formTitle">Citizen Portal</h3>
+      <p class="text-sm text-secondary mb-6" id="formSubtitle">Access your commuter account</p>
+
+      <!-- Role Toggle -->
+      <div class="segmented-control flex gap-2 mb-6">
+        <button type="button" class="btn btn-primary flex-1" id="btnPublic" onclick="setRole('user')">
+          <i class="fa-solid fa-user"></i> Public
+        </button>
+        <button type="button" class="btn btn-secondary flex-1" id="btnAdmin" onclick="setRole('gov')">
+          <i class="fa-solid fa-shield"></i> Admin
+        </button>
+      </div>
+
+      <!-- ================= LOGIN FORM ================= -->
+      <form id="loginForm" method="POST" action="/">
+        <input type="hidden" name="role" class="roleInput" value="user">
+        
+        <div class="form-group mb-4">
+          <label class="form-label">Email Address</label>
+          <div class="input-wrapper">
+            <i class="fa-regular fa-envelope input-icon"></i>
+            <input type="email" name="email" class="form-input" placeholder="name@example.com" required>
+          </div>
+        </div>
+
+        <div class="form-group mb-6">
+          <label class="form-label">Password</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input type="password" name="password" class="form-input" placeholder="••••••••" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full" style="width: 100%;">
+          Secure Login <i class="fa-solid fa-arrow-right-to-bracket"></i>
+        </button>
+        
+        <p class="text-center text-sm text-muted mt-4">
+          Don't have an account? <a href="#" onclick="toggleAuthMode('signup')" class="text-primary font-bold">Register Now</a>
+        </p>
+      </form>
+
+      <!-- ================= SIGN UP FORM ================= -->
+      <form id="signupForm" method="POST" action="/signup" style="display: none;">
+        <input type="hidden" name="role" class="roleInput" value="user">
+        
+        <div class="form-group mb-4">
+          <label class="form-label">Full Name</label>
+          <div class="input-wrapper">
+            <i class="fa-regular fa-user input-icon"></i>
+            <input type="text" name="name" class="form-input" placeholder="John Doe" required>
+          </div>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label">Email Address</label>
+          <div class="input-wrapper">
+            <i class="fa-regular fa-envelope input-icon"></i>
+            <input type="email" name="email" class="form-input" placeholder="name@example.com" required>
+          </div>
+        </div>
+
+        <div class="form-group mb-6">
+          <label class="form-label">Create Password</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input type="password" name="password" class="form-input" placeholder="••••••••" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-accent w-full" style="width: 100%;">
+          Create Account <i class="fa-solid fa-user-plus"></i>
+        </button>
+        
+        <p class="text-center text-sm text-muted mt-4">
+          Already have an account? <a href="#" onclick="toggleAuthMode('login')" class="text-primary font-bold">Back to Login</a>
+        </p>
+      </form>
+
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>
